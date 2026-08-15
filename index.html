@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head> 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoramento da Piscina</title> 
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<header> 
+<h1>Monitoramento da Piscina</h1>
+<p>Sistema de monitoramento da qualidade da água</p>
+
+</header> 
+<div class="container"> 
+<h2 class="titulo-sensores">
+</h2>
+<div class="cards">
+<div class="card">
+<i class="fa-solid fa-temperature-half"></i>
+<h2>Temperatura em °C </h2>
+<p class="valor" id="temperatura">
+    -- °C
+</p>
+</div>
+<div class="card">
+<i class="fa-solid fa-flask"></i>
+<h2>pH</h2>
+<p class="valor" id="ph">
+    --
+</p>
+</div>
+<div class="card">
+<i class="fa-solid fa-droplet"></i>
+<h2>Cloro em ppm</h2>
+<p class="valor" id="cloro">
+    -- ppm
+</p>
+</div>
+</div>
+<div class="status">
+<h2>Status da Piscina</h2>
+<p id="resultado"> Analisando... </p>
+</div>
+</div>
+<script>
+
+
+const enderecoESP = "http://IP_DA_ESP32/dados";
+function atualizarDados(){
+fetch(enderecoESP)
+.then(response => response.json())
+.then(dados => {
+document.getElementById("temperatura").innerHTML =
+dados.temperatura + " °C";
+document.getElementById("ph").innerHTML =
+dados.ph;
+document.getElementById("cloro").innerHTML =
+dados.cloro + " ppm";
+verificarStatus(
+dados.ph,
+dados.cloro
+);
+});
+}
+setInterval(atualizarDados, 5000);
+atualizarDados();
+function verificarStatus(ph, cloro){
+let mensagem;
+if(
+ph >= 7.2 &&
+ph <= 7.6 &&
+cloro >= 1 &&
+cloro <= 3
+)
+{
+mensagem = "🟢 Piscina em boas condições";
+}
+else if(
+ph < 7.0 ||
+ph > 8.0
+)
+{
+ mensagem = "🔴 Necessário ajuste no pH";
+}
+else
+{
+mensagem = "🟡 Atenção: verificar parâmetros";
+}
+document.getElementById("resultado").innerHTML = mensagem;
+}
+verificarStatus();
+</script>
+
+</body>
+
+</html>
