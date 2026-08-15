@@ -50,67 +50,52 @@
 <script>
 
 const enderecoAPI =
-    "https://api.thingspeak.com/channels/3456735/feeds.json?results=1";
-
+"https://api.thingspeak.com/channels/3456735/feeds.json?results=1";
 function atualizarDados() {
+fetch(enderecoAPI)
+.then(response => response.json())
+.then(dados => {
 
-    fetch(enderecoAPI)
-        .then(response => response.json())
-        .then(dados => {
+const ultimoDado = dados.feeds[0];
+const temperatura = parseFloat(ultimoDado.field1);
+const ph = parseFloat(ultimoDado.field2);
+const cloro = parseFloat(ultimoDado.field3);
 
-            const ultimoDado = dados.feeds[0];
-
-            const temperatura = parseFloat(ultimoDado.field1);
-            const ph = parseFloat(ultimoDado.field2);
-            const cloro = parseFloat(ultimoDado.field3);
-
-            document.getElementById("temperatura").innerHTML =
-                temperatura + " °C";
-
-            document.getElementById("ph").innerHTML =
-                ph;
-
-            document.getElementById("cloro").innerHTML =
-                cloro + " ppm";
-
-            verificarStatus(ph, cloro);
-        })
-        .catch(erro => {
-            console.log("Erro ao buscar dados:", erro);
-        });
+document.getElementById("temperatura").innerHTML =
+temperatura + " °C";
+document.getElementById("ph").innerHTML =
+ph;
+document.getElementById("cloro").innerHTML =
+cloro + " ppm";
+verificarStatus(ph, cloro);
+})
+.catch(erro => {
+console.log("Erro ao buscar dados:", erro);
+});
 }
-
 function verificarStatus(ph, cloro) {
-
-    let mensagem;
-
-    if (
-        ph >= 7.2 &&
-        ph <= 7.6 &&
-        cloro >= 1 &&
-        cloro <= 3
-    ) {
-        mensagem = "🟢 Piscina em boas condições";
-    }
-    else if (
-        ph < 7.0 ||
-        ph > 8.0
-    ) {
-        mensagem = "🔴 Necessário ajuste no pH";
-    }
-    else {
-        mensagem = "🟡 Atenção: verificar parâmetros";
-    }
-
-    document.getElementById("resultado").innerHTML = mensagem;
+let mensagem;
+if (
+ph >= 7.2 &&
+ph <= 7.6 &&
+cloro >= 1 &&
+cloro <= 3
+) {
+mensagem = "🟢 Piscina em boas condições";
 }
-
+else if (
+ph < 7.0 ||
+ph > 8.0
+) {
+mensagem = "🔴 Necessário ajuste no pH";
+}
+else {
+mensagem = "🟡 Atenção: verificar parâmetros";
+}
+document.getElementById("resultado").innerHTML = mensagem;
+}
 atualizarDados();
-
 setInterval(atualizarDados, 5000);
-
 </script>
-
 </body>
-
 </html>
