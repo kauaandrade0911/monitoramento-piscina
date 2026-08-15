@@ -49,51 +49,66 @@
 </div>
 <script>
 
+const enderecoAPI =
+    "https://api.thingspeak.com/channels/3456735/feeds.json?results=1";
 
-const enderecoESP = "http://IP_DA_ESP32/dados";
-function atualizarDados(){
-fetch(enderecoESP)
-.then(response => response.json())
-.then(dados => {
-document.getElementById("temperatura").innerHTML =
-dados.temperatura + " °C";
-document.getElementById("ph").innerHTML =
-dados.ph;
-document.getElementById("cloro").innerHTML =
-dados.cloro + " ppm";
-verificarStatus(
-dados.ph,
-dados.cloro
-);
-});
+function atualizarDados() {
+
+    fetch(enderecoAPI)
+        .then(response => response.json())
+        .then(dados => {
+
+            const ultimoDado = dados.feeds[0];
+
+            const temperatura = parseFloat(ultimoDado.field1);
+            const ph = parseFloat(ultimoDado.field2);
+            const cloro = parseFloat(ultimoDado.field3);
+
+            document.getElementById("temperatura").innerHTML =
+                temperatura + " °C";
+
+            document.getElementById("ph").innerHTML =
+                ph;
+
+            document.getElementById("cloro").innerHTML =
+                cloro + " ppm";
+
+            verificarStatus(ph, cloro);
+        })
+        .catch(erro => {
+            console.log("Erro ao buscar dados:", erro);
+        });
 }
-setInterval(atualizarDados, 5000);
+
+function verificarStatus(ph, cloro) {
+
+    let mensagem;
+
+    if (
+        ph >= 7.2 &&
+        ph <= 7.6 &&
+        cloro >= 1 &&
+        cloro <= 3
+    ) {
+        mensagem = "🟢 Piscina em boas condições";
+    }
+    else if (
+        ph < 7.0 ||
+        ph > 8.0
+    ) {
+        mensagem = "🔴 Necessário ajuste no pH";
+    }
+    else {
+        mensagem = "🟡 Atenção: verificar parâmetros";
+    }
+
+    document.getElementById("resultado").innerHTML = mensagem;
+}
+
 atualizarDados();
-function verificarStatus(ph, cloro){
-let mensagem;
-if(
-ph >= 7.2 &&
-ph <= 7.6 &&
-cloro >= 1 &&
-cloro <= 3
-)
-{
-mensagem = "🟢 Piscina em boas condições";
-}
-else if(
-ph < 7.0 ||
-ph > 8.0
-)
-{
- mensagem = "🔴 Necessário ajuste no pH";
-}
-else
-{
-mensagem = "🟡 Atenção: verificar parâmetros";
-}
-document.getElementById("resultado").innerHTML = mensagem;
-}
-verificarStatus();
+
+setInterval(atualizarDados, 5000);
+
 </script>
 
 </body>
