@@ -1,103 +1,299 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head> 
-<meta charset="UTF-8"> 
+
+<head>
+
+<meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitoramento da Piscina</title> 
+
+<title>Monitoramento da Piscina</title>
+
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
 
 <body>
 
-<header> 
+<header>
+
 <h1>Monitoramento da Piscina</h1>
+
 <p>Sistema de monitoramento da qualidade da água</p>
 
-</header> 
-<div class="container"> 
+</header>
+
+
+<div class="container">
+
 <h2 class="titulo-sensores">
+Dados dos sensores
 </h2>
+
+
 <div class="cards">
+
+
+<!-- TEMPERATURA -->
+
 <div class="card">
+
 <i class="fa-solid fa-temperature-half"></i>
-<h2>Temperatura em °C </h2>
+
+<h2>Temperatura em °C</h2>
+
 <p class="valor" id="temperatura">
-    -- °C
+-- °C
 </p>
+
 </div>
+
+
+<!-- PH -->
+
 <div class="card">
+
 <i class="fa-solid fa-flask"></i>
+
 <h2>pH</h2>
+
 <p class="valor" id="ph">
-    --
+--
 </p>
+
 </div>
+
+
+<!-- ORP -->
+
 <div class="card">
+
 <i class="fa-solid fa-droplet"></i>
-<h2>Cloro em ppm</h2>
-<p class="valor" id="cloro">
-    -- ppm
+
+<h2>ORP em mV</h2>
+
+<p class="valor" id="orp">
+-- mV
 </p>
+
 </div>
+
+
 </div>
+
+
+<!-- STATUS -->
+
 <div class="status">
+
 <h2>Status da Piscina</h2>
-<p id="resultado"> Analisando... </p>
+
+<p id="resultado">
+Analisando...
+</p>
+
 </div>
+
+
 </div>
+
+
 <script>
+
+
+// =====================================
+// ENDEREÇO DO THINGSPEAK
+// =====================================
 
 const enderecoAPI =
 "https://api.thingspeak.com/channels/3456735/feeds.json?results=1";
+
+
+// =====================================
+// ATUALIZAR DADOS
+// =====================================
+
 function atualizarDados() {
+
 fetch(enderecoAPI)
+
 .then(response => response.json())
+
 .then(dados => {
 
+
 const ultimoDado = dados.feeds[0];
-const temperatura = parseFloat(ultimoDado.field1);
-const ph = parseFloat(ultimoDado.field2);
-const cloro = parseFloat(ultimoDado.field3);
+
+
+// =====================================
+// PEGAR DADOS DO THINGSPEAK
+// =====================================
+
+const temperatura =
+parseFloat(ultimoDado.field1);
+
+const ph =
+parseFloat(ultimoDado.field2);
+
+const orp =
+parseFloat(ultimoDado.field3);
+
+
+// =====================================
+// MOSTRAR TEMPERATURA
+// =====================================
+
+if (!isNaN(temperatura)) {
 
 document.getElementById("temperatura").innerHTML =
-temperatura + " °C";
+temperatura.toFixed(1) + " °C";
+
+}
+
+
+// =====================================
+// MOSTRAR PH
+// =====================================
+
+if (!isNaN(ph)) {
+
 document.getElementById("ph").innerHTML =
-ph;
-document.getElementById("cloro").innerHTML =
-cloro + " ppm";
-verificarStatus(ph, cloro);
+ph.toFixed(2);
+
+}
+
+
+// =====================================
+// MOSTRAR ORP
+// =====================================
+
+if (!isNaN(orp)) {
+
+document.getElementById("orp").innerHTML =
+orp.toFixed(0) + " mV";
+
+}
+
+
+// =====================================
+// VERIFICAR STATUS
+// =====================================
+
+verificarStatus(ph, orp);
+
+
 })
+
+
 .catch(erro => {
-console.log("Erro ao buscar dados:", erro);
+
+console.log(
+"Erro ao buscar dados:",
+erro
+);
+
+document.getElementById("resultado").innerHTML =
+"⚠️ Não foi possível obter os dados";
+
 });
+
 }
-function verificarStatus(ph, cloro) {
+
+
+// =====================================
+// STATUS DA PISCINA
+// =====================================
+
+function verificarStatus(ph, orp) {
+
 let mensagem;
-if (
-ph >= 7.2 &&
-ph <= 7.6 &&
-cloro >= 1 &&
-cloro <= 3
-) {
-mensagem = "🟢 Piscina em boas condições";
+
+
+// Se os valores ainda não chegaram
+
+if (isNaN(ph) || isNaN(orp)) {
+
+mensagem =
+"🟡 Aguardando dados dos sensores";
+
 }
+
+
+// pH fora de uma faixa muito ampla
+
 else if (
 ph < 7.0 ||
-ph > 8.0 ||
-cloro < 0.5 || 
-cloro > 5.0
+ph > 8.0
 ) {
-mensagem = "🔴 Necessário ajuste";
+
+mensagem =
+"🔴 Necessário verificar o pH";
+
 }
+
+
+// ORP muito baixo
+
+else if (
+orp < 500
+) {
+
+mensagem =
+"🟡 Atenção: ORP baixo";
+
+}
+
+
+// ORP muito alto
+
+else if (
+orp > 900
+) {
+
+mensagem =
+"🟡 Atenção: ORP elevado";
+
+}
+
+
+// Condições dentro da faixa utilizada
+
 else {
-mensagem = "🟡 Atenção: verificar parâmetros";
+
+mensagem =
+"🟢 Piscina em boas condições";
+
 }
-document.getElementById("resultado").innerHTML = mensagem;
+
+
+document.getElementById("resultado").innerHTML =
+mensagem;
+
 }
+
+
+// =====================================
+// PRIMEIRA ATUALIZAÇÃO
+// =====================================
+
 atualizarDados();
-setInterval(atualizarDados, 5000);
+
+
+// =====================================
+// ATUALIZAR A CADA 5 SEGUNDOS
+// =====================================
+
+setInterval(
+atualizarDados,
+5000
+);
+
+
 </script>
+
 </body>
+
 </html>
