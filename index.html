@@ -1,240 +1,105 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Monitoramento da Piscina</title>
-
 <link rel="stylesheet" href="style.css">
-
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 </head>
-
 <body>
-
 <header>
-
 <h1>Monitoramento da Piscina</h1>
-
 <p>Sistema de monitoramento da qualidade da água</p>
-
 </header>
-
-
 <div class="container">
-
 <h2 class="titulo-sensores">
 Dados dos sensores
 </h2>
-
-
 <div class="cards">
-
-
-<!-- TEMPERATURA -->
-
 <div class="card">
-
 <i class="fa-solid fa-temperature-half"></i>
-
 <h2>Temperatura em °C</h2>
-
 <p class="valor" id="temperatura">
 -- °C
 </p>
-
 </div>
 
-
-<!-- PH -->
-
 <div class="card">
-
 <i class="fa-solid fa-flask"></i>
-
 <h2>pH</h2>
-
 <p class="valor" id="ph">
 --
 </p>
-
 </div>
 
-
-<!-- CLORO -->
-
 <div class="card">
-
 <i class="fa-solid fa-droplet"></i>
-
 <h2>Cloro em ppm</h2>
-
 <p class="valor" id="cloro">
 -- ppm
 </p>
-
 </div>
-
-
 </div>
-
-
-<!-- STATUS -->
 
 <div class="status">
-
 <h2>Status da Piscina</h2>
-
 <p id="resultado">
 Analisando...
 </p>
-
 </div>
-
-
 </div>
-
-
 <script>
-
-
-// =====================================
-// ENDEREÇO DO THINGSPEAK
-// =====================================
-
 const enderecoAPI =
 "https://api.thingspeak.com/channels/3456735/feeds.json?results=1";
-
-
-// =====================================
-// ATUALIZAR DADOS
-// =====================================
-
 function atualizarDados() {
-
 fetch(enderecoAPI)
-
 .then(response => response.json())
-
 .then(dados => {
-
-
 const ultimoDado = dados.feeds[0];
-
-
-// =====================================
-// PEGAR DADOS DO THINGSPEAK
-// =====================================
-
 const temperatura =
 parseFloat(ultimoDado.field1);
-
 const ph =
 parseFloat(ultimoDado.field2);
-
 const orp =
 parseFloat(ultimoDado.field3);
-
-
-// =====================================
-// CONVERSÃO DE ORP (mV) PARA CLORO (ppm)
-// =====================================
-
-// A fórmula de conversão será colocada aqui.
-// Por enquanto, o valor recebido do field3
-// é utilizado diretamente como valor do cloro.
-
 const cloro = orp;
-
-
-// =====================================
-// MOSTRAR TEMPERATURA
-// =====================================
-
 if (!isNaN(temperatura)) {
-
 document.getElementById("temperatura").innerHTML =
 temperatura.toFixed(1) + " °C";
 
 }
-
-
-// =====================================
-// MOSTRAR PH
-// =====================================
-
 if (!isNaN(ph)) {
-
 document.getElementById("ph").innerHTML =
 ph.toFixed(2);
-
 }
-
-
-// =====================================
-// MOSTRAR CLORO
-// =====================================
-
 if (!isNaN(cloro)) {
-
 document.getElementById("cloro").innerHTML =
 cloro.toFixed(2) + " ppm";
 
 }
-
-
-// =====================================
-// VERIFICAR STATUS
-// =====================================
-
 verificarStatus(ph, cloro);
 
 
 })
 
-
 .catch(erro => {
-
 console.log(
 "Erro ao buscar dados:",
 erro
 );
-
 document.getElementById("resultado").innerHTML =
 "⚠️ Não foi possível obter os dados";
-
 });
-
 }
-
-
-// =====================================
-// STATUS DA PISCINA
-// =====================================
-
 function verificarStatus(ph, cloro) {
-
 let mensagem;
-
-
-// Se os valores ainda não chegaram
-
 if (isNaN(ph) || isNaN(cloro)) {
-
 mensagem =
 "🟡 Aguardando dados dos sensores";
 
 }
-
-
-// pH fora de uma faixa muito ampla
 
 else if (
 ph < 7.0 ||
@@ -246,9 +111,6 @@ mensagem =
 
 }
 
-
-// Cloro muito baixo
-
 else if (
 cloro < 1.0
 ) {
@@ -258,9 +120,6 @@ mensagem =
 
 }
 
-
-// Cloro muito alto
-
 else if (
 cloro > 3.0
 ) {
@@ -269,9 +128,6 @@ mensagem =
 "🟡 Atenção: nível de cloro elevado";
 
 }
-
-
-// Condições dentro da faixa utilizada
 
 else {
 
@@ -285,28 +141,11 @@ document.getElementById("resultado").innerHTML =
 mensagem;
 
 }
-
-
-// =====================================
-// PRIMEIRA ATUALIZAÇÃO
-// =====================================
-
 atualizarDados();
-
-
-// =====================================
-// ATUALIZAR A CADA 5 SEGUNDOS
-// =====================================
-
 setInterval(
 atualizarDados,
 5000
 );
-
-
 </script>
-
 </body>
-
 </html>
-```
