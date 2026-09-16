@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -67,16 +68,16 @@ Dados dos sensores
 </div>
 
 
-<!-- ORP -->
+<!-- CLORO -->
 
 <div class="card">
 
 <i class="fa-solid fa-droplet"></i>
 
-<h2>ORP em mV</h2>
+<h2>Cloro em ppm</h2>
 
-<p class="valor" id="orp">
--- mV
+<p class="valor" id="cloro">
+-- ppm
 </p>
 
 </div>
@@ -143,6 +144,17 @@ parseFloat(ultimoDado.field3);
 
 
 // =====================================
+// CONVERSÃO DE ORP (mV) PARA CLORO (ppm)
+// =====================================
+
+// A fórmula de conversão será colocada aqui.
+// Por enquanto, o valor recebido do field3
+// é utilizado diretamente como valor do cloro.
+
+const cloro = orp;
+
+
+// =====================================
 // MOSTRAR TEMPERATURA
 // =====================================
 
@@ -167,13 +179,13 @@ ph.toFixed(2);
 
 
 // =====================================
-// MOSTRAR ORP
+// MOSTRAR CLORO
 // =====================================
 
-if (!isNaN(orp)) {
+if (!isNaN(cloro)) {
 
-document.getElementById("orp").innerHTML =
-orp.toFixed(0) + " mV";
+document.getElementById("cloro").innerHTML =
+cloro.toFixed(2) + " ppm";
 
 }
 
@@ -182,7 +194,7 @@ orp.toFixed(0) + " mV";
 // VERIFICAR STATUS
 // =====================================
 
-verificarStatus(ph, orp);
+verificarStatus(ph, cloro);
 
 
 })
@@ -207,14 +219,14 @@ document.getElementById("resultado").innerHTML =
 // STATUS DA PISCINA
 // =====================================
 
-function verificarStatus(ph, orp) {
+function verificarStatus(ph, cloro) {
 
 let mensagem;
 
 
 // Se os valores ainda não chegaram
 
-if (isNaN(ph) || isNaN(orp)) {
+if (isNaN(ph) || isNaN(cloro)) {
 
 mensagem =
 "🟡 Aguardando dados dos sensores";
@@ -235,26 +247,26 @@ mensagem =
 }
 
 
-// ORP muito baixo
+// Cloro muito baixo
 
 else if (
-orp < 500
+cloro < 1.0
 ) {
 
 mensagem =
-"🟡 Atenção: ORP baixo";
+"🟡 Atenção: nível de cloro baixo";
 
 }
 
 
-// ORP muito alto
+// Cloro muito alto
 
 else if (
-orp > 900
+cloro > 3.0
 ) {
 
 mensagem =
-"🟡 Atenção: ORP elevado";
+"🟡 Atenção: nível de cloro elevado";
 
 }
 
@@ -297,3 +309,4 @@ atualizarDados,
 </body>
 
 </html>
+```
