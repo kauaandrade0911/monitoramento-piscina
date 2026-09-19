@@ -1,151 +1,220 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Monitoramento da Piscina</title>
+
 <link rel="stylesheet" href="style.css">
+
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
+
 <body>
+
 <header>
-<h1>Monitoramento da Piscina</h1>
-<p>Sistema de monitoramento da qualidade da água</p>
+    <h1>Monitoramento da Piscina</h1>
+    <p>Sistema de monitoramento da qualidade da água</p>
 </header>
+
 <div class="container">
-<h2 class="titulo-sensores">
-Dados dos sensores
-</h2>
-<div class="cards">
-<div class="card">
-<i class="fa-solid fa-temperature-half"></i>
-<h2>Temperatura em °C</h2>
-<p class="valor" id="temperatura">
--- °C
-</p>
+
+    <h2 class="titulo-sensores">
+        Dados dos sensores
+    </h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <i class="fa-solid fa-temperature-half"></i>
+            <h2>Temperatura em °C</h2>
+            <p class="valor" id="temperatura">-- °C</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-flask"></i>
+            <h2>pH</h2>
+            <p class="valor" id="ph">--</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-droplet"></i>
+            <h2>Cloro em ppm</h2>
+            <p class="valor" id="cloro">-- ppm</p>
+        </div>
+
+    </div>
+
+    <div class="status">
+        <h2>Status da Piscina</h2>
+        <p id="resultado">Analisando...</p>
+    </div>
+
 </div>
 
-<div class="card">
-<i class="fa-solid fa-flask"></i>
-<h2>pH</h2>
-<p class="valor" id="ph">
---
-</p>
-</div>
-
-<div class="card">
-<i class="fa-solid fa-droplet"></i>
-<h2>Cloro em ppm</h2>
-<p class="valor" id="cloro">
--- ppm
-</p>
-</div>
-</div>
-
-<div class="status">
-<h2>Status da Piscina</h2>
-<p id="resultado">
-Analisando...
-</p>
-</div>
-</div>
 <script>
+
+// =====================================
+// THINGSPEAK
+// =====================================
+
 const enderecoAPI =
 "https://api.thingspeak.com/channels/3456735/feeds.json?results=1";
+
+// =====================================
+// ATUALIZAR DADOS
+// =====================================
+
 function atualizarDados() {
-fetch(enderecoAPI)
-.then(response => response.json())
-.then(dados => {
-const ultimoDado = dados.feeds[0];
-const temperatura =
-parseFloat(ultimoDado.field1);
-const ph =
-parseFloat(ultimoDado.field2);
-const orp =
-parseFloat(ultimoDado.field3);
-const cloro = orp;
-if (!isNaN(temperatura)) {
-document.getElementById("temperatura").innerHTML =
-temperatura.toFixed(1) + " °C";
 
+    fetch(enderecoAPI)
+
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Erro ao acessar o ThingSpeak");
+        }
+
+        return response.json();
+    })
+
+    .then(dados => {
+
+        if (!dados.feeds || dados.feeds.length === 0) {
+            throw new Error("Nenhum dado recebido");
+        }
+
+        const ultimoDado = dados.feeds[0];
+
+        // Field 1: Temperatura
+        const temperatura = parseFloat(ultimoDado.field1);
+
+        // Field 2: pH
+        const ph = parseFloat(ultimoDado.field2);
+
+        // Field 3: ORP em mV
+        const orp = parseFloat(ultimoDado.field3);
+
+        // Field 4: Cloro em ppm
+        const cloro = parseFloat(ultimoDado.field4);
+
+        // =====================================
+        // TEMPERATURA
+        // =====================================
+
+        document.getElementById("temperatura").textContent =
+            Number.isFinite(temperatura)
+                ? temperatura.toFixed(1) + " °C"
+                : "-- °C";
+
+        // =====================================
+        // pH
+        // =====================================
+
+        document.getElementById("ph").textContent =
+            Number.isFinite(ph)
+                ? ph.toFixed(2)
+                : "--";
+
+        // =====================================
+        // CLORO EM PPM
+        // =====================================
+
+        document.getElementById("cloro").textContent =
+            Number.isFinite(cloro)
+                ? cloro.toFixed(2) + " ppm"
+                : "-- ppm";
+
+        // =====================================
+        // STATUS
+        // =====================================
+
+        verificarStatus(ph, cloro);
+
+        // =====================================
+        // CONFERIR DADOS
+        // =====================================
+
+        console.log("Dados recebidos:", {
+            temperatura: temperatura,
+            ph: ph,
+            orp: orp,
+            cloro: cloro
+        });
+
+    })
+
+    .catch(erro => {
+
+        console.log("Erro ao buscar dados:", erro);
+
+        document.getElementById("resultado").textContent =
+            "⚠️ Não foi possível obter os dados";
+
+    });
 }
-if (!isNaN(ph)) {
-document.getElementById("ph").innerHTML =
-ph.toFixed(2);
-}
-if (!isNaN(cloro)) {
-document.getElementById("cloro").innerHTML =
-cloro.toFixed(2) + " ppm";
 
-}
-verificarStatus(ph, cloro);
+// =====================================
+// VERIFICAR STATUS DA PISCINA
+// =====================================
 
-
-})
-
-.catch(erro => {
-console.log(
-"Erro ao buscar dados:",
-erro
-);
-document.getElementById("resultado").innerHTML =
-"⚠️ Não foi possível obter os dados";
-});
-}
 function verificarStatus(ph, cloro) {
-let mensagem;
-if (isNaN(ph) || isNaN(cloro)) {
-mensagem =
-"🟡 Aguardando dados dos sensores";
 
+    let mensagem;
+
+    if (!Number.isFinite(ph) ||
+        !Number.isFinite(cloro)) {
+
+        mensagem =
+            "🟡 Aguardando dados dos sensores";
+
+    }
+
+    else if (ph < 7.0 || ph > 8.0) {
+
+        mensagem =
+            "🔴 Necessário verificar o pH";
+
+    }
+
+    else if (cloro < 1.0) {
+
+        mensagem =
+            "🟡 Atenção: nível de cloro baixo";
+
+    }
+
+    else if (cloro > 3.0) {
+
+        mensagem =
+            "🟡 Atenção: nível de cloro elevado";
+
+    }
+
+    else {
+
+        mensagem =
+            "🟢 Piscina em boas condições";
+
+    }
+
+    document.getElementById("resultado").textContent =
+        mensagem;
 }
 
-else if (
-ph < 7.0 ||
-ph > 8.0
-) {
+// =====================================
+// INICIAR ATUALIZAÇÕES
+// =====================================
 
-mensagem =
-"🔴 Necessário verificar o pH";
-
-}
-
-else if (
-cloro < 1.0
-) {
-
-mensagem =
-"🟡 Atenção: nível de cloro baixo";
-
-}
-
-else if (
-cloro > 3.0
-) {
-
-mensagem =
-"🟡 Atenção: nível de cloro elevado";
-
-}
-
-else {
-
-mensagem =
-"🟢 Piscina em boas condições";
-
-}
-
-
-document.getElementById("resultado").innerHTML =
-mensagem;
-
-}
 atualizarDados();
-setInterval(
-atualizarDados,
-5000
-);
+
+setInterval(atualizarDados, 5000);
+
 </script>
+
 </body>
 </html>
