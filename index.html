@@ -3,8 +3,11 @@
 <html lang="pt-BR">
 
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>Monitoramento da Piscina</title>
 
@@ -18,8 +21,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <body>
 
 <header>
+
     <h1>Monitoramento da Piscina</h1>
-    <p>Sistema de monitoramento da qualidade da água</p>
+
+    <p>
+        Sistema de monitoramento da qualidade da água
+    </p>
+
 </header>
 
 <div class="container">
@@ -30,29 +38,60 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
     <div class="cards">
 
+        <!-- TEMPERATURA -->
+
         <div class="card">
+
             <i class="fa-solid fa-temperature-half"></i>
+
             <h2>Temperatura em °C</h2>
-            <p class="valor" id="temperatura">-- °C</p>
+
+            <p class="valor" id="temperatura">
+                -- °C
+            </p>
+
         </div>
 
+        <!-- PH -->
+
         <div class="card">
+
             <i class="fa-solid fa-flask"></i>
+
             <h2>pH</h2>
-            <p class="valor" id="ph">--</p>
+
+            <p class="valor" id="ph">
+                --
+            </p>
+
         </div>
 
+        <!-- CLORO -->
+
         <div class="card">
+
             <i class="fa-solid fa-droplet"></i>
+
             <h2>Cloro em ppm</h2>
-            <p class="valor" id="cloro">-- ppm</p>
+
+            <p class="valor" id="cloro">
+                -- ppm
+            </p>
+
         </div>
 
     </div>
 
+    <!-- STATUS -->
+
     <div class="status">
+
         <h2>Status da Piscina</h2>
-        <p id="resultado">Analisando...</p>
+
+        <p id="resultado">
+            Analisando...
+        </p>
+
     </div>
 
 </div>
@@ -75,11 +114,13 @@ function atualizarDados() {
     fetch(enderecoAPI)
 
     .then(response => {
+
         if (!response.ok) {
             throw new Error("Erro ao acessar o ThingSpeak");
         }
 
         return response.json();
+
     })
 
     .then(dados => {
@@ -91,19 +132,20 @@ function atualizarDados() {
         const ultimoDado = dados.feeds[0];
 
         // Field 1: Temperatura
-        const temperatura = parseFloat(ultimoDado.field1);
+        const temperatura =
+            parseFloat(ultimoDado.field1);
 
         // Field 2: pH
-        const ph = parseFloat(ultimoDado.field2);
+        const ph =
+            parseFloat(ultimoDado.field2);
 
-        // Field 3: ORP em mV
-        const orp = parseFloat(ultimoDado.field3);
+        // Field 3: Cloro em ppm
+        const cloro =
+            parseFloat(ultimoDado.field3);
 
-        // Field 4: Cloro em ppm
-        const cloro = parseFloat(ultimoDado.field4);
 
         // =====================================
-        // TEMPERATURA
+        // MOSTRAR TEMPERATURA
         // =====================================
 
         document.getElementById("temperatura").textContent =
@@ -111,8 +153,9 @@ function atualizarDados() {
                 ? temperatura.toFixed(1) + " °C"
                 : "-- °C";
 
+
         // =====================================
-        // pH
+        // MOSTRAR PH
         // =====================================
 
         document.getElementById("ph").textContent =
@@ -120,8 +163,9 @@ function atualizarDados() {
                 ? ph.toFixed(2)
                 : "--";
 
+
         // =====================================
-        // CLORO EM PPM
+        // MOSTRAR CLORO EM PPM
         // =====================================
 
         document.getElementById("cloro").textContent =
@@ -129,11 +173,13 @@ function atualizarDados() {
                 ? cloro.toFixed(2) + " ppm"
                 : "-- ppm";
 
+
         // =====================================
-        // STATUS
+        // ATUALIZAR STATUS
         // =====================================
 
         verificarStatus(ph, cloro);
+
 
         // =====================================
         // CONFERIR DADOS
@@ -142,7 +188,6 @@ function atualizarDados() {
         console.log("Dados recebidos:", {
             temperatura: temperatura,
             ph: ph,
-            orp: orp,
             cloro: cloro
         });
 
@@ -156,7 +201,9 @@ function atualizarDados() {
             "⚠️ Não foi possível obter os dados";
 
     });
+
 }
+
 
 // =====================================
 // VERIFICAR STATUS DA PISCINA
@@ -166,15 +213,20 @@ function verificarStatus(ph, cloro) {
 
     let mensagem;
 
-    if (!Number.isFinite(ph) ||
-        !Number.isFinite(cloro)) {
+    if (
+        !Number.isFinite(ph) ||
+        !Number.isFinite(cloro)
+    ) {
 
         mensagem =
             "🟡 Aguardando dados dos sensores";
 
     }
 
-    else if (ph < 7.0 || ph > 8.0) {
+    else if (
+        ph < 7.0 ||
+        ph > 8.0
+    ) {
 
         mensagem =
             "🔴 Necessário verificar o pH";
@@ -204,15 +256,20 @@ function verificarStatus(ph, cloro) {
 
     document.getElementById("resultado").textContent =
         mensagem;
+
 }
 
+
 // =====================================
-// INICIAR ATUALIZAÇÕES
+// INICIAR ATUALIZACOES
 // =====================================
 
 atualizarDados();
 
-setInterval(atualizarDados, 5000);
+setInterval(
+    atualizarDados,
+    5000
+);
 
 </script>
 
